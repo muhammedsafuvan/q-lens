@@ -224,6 +224,49 @@ Health endpoint:
 
 - http://localhost:8000/api/v1/health
 
+### Running Background Jobs
+
+QueueLens uses Celery with Redis for asynchronous task execution.
+
+Start the Celery worker:
+
+```bash
+uv run celery -A app.workers.celery_app:celery_app worker --loglevel=info
+```
+
+Start the API in another terminal:
+
+```bash
+uv run uvicorn app.main:app --reload
+```
+
+Submit a demo background job:
+
+```bash
+curl -X POST http://localhost:8000/api/v1/demo/jobs \
+  -H "Content-Type: application/json" \
+  -d '{"duration_seconds": 5}'
+```
+
+Inspect its status:
+
+```bash
+curl http://localhost:8000/api/v1/demo/jobs/<TASK_ID>
+```
+
+The API returns HTTP `202 Accepted` when a task has been submitted. The task executes independently in the Celery worker.
+
+### Background Job Infrastructure
+
+- [x] Celery application configuration
+- [x] Redis-backed task execution
+- [x] Independent Celery worker
+- [x] Demo background task
+- [x] Task submission API
+- [x] Task status API
+- [ ] Worker lifecycle monitoring
+- [ ] QueueLens instrumentation SDK
+
 ## Database Migrations
 
 QueueLens uses DBmate for PostgreSQL schema management and SQLAlchemy for application-level database access.
