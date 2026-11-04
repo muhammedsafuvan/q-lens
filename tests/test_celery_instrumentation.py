@@ -3,7 +3,7 @@ from uuid import uuid4
 
 from app.schemas.events import JobEventType
 from app.workers.instrumentation import (
-    get_recent_events,
+    get_pending_events,
     on_task_started,
 )
 
@@ -23,7 +23,7 @@ def test_task_started_signal_creates_event():
 
     on_task_started(task_id=task_id, task=task)
 
-    events = get_recent_events()
+    events = get_pending_events()
     event = next(event for event in events if event.task_id == task_id)
 
     assert event.event_type == JobEventType.STARTED

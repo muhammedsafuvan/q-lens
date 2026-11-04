@@ -1,22 +1,19 @@
 import logging
-from collections import deque
-from threading import Lock
 from typing import Any
 
 from celery import signals
 
 from app.schemas.events import JobEvent, JobEventType
+from app.workers.event_buffer import EventBuffer
 
 logger = logging.getLogger(__name__)
 
-_event_buffer: deque[JobEvent] = deque(maxlen=1000)
-_buffer_lock = Lock()
+event_buffer = EventBuffer(capacity=1000)
 
 
-def get_recent_events() -> list[JobEvent]:
-    """Return a snapshot of recently captured events."""
-    with _buffer_lock:
-        return list(_event_buffer)
+def get_pending_events(limit: int = 100) -> list[JobEvent]:
+    """Return events currently awaiting delivery."""
+    return event_buffer.get_batch(limit)
 
 
 def _record_event(
@@ -42,10 +39,14 @@ def _record_event(
             attempt=getattr(request, "retries", 0) + 1,
         )
 
-        with _buffer_lock:
-            _event_buffer.append(event)
+        if not event_buffer.add(event):
+            logger.warning(
+                "QueueLens event buffer is full. Dropping new event. Total dropped: %s",
+                event_buffer.dropped_count,
+            )
+            return
 
-        logger.info(
+        logger.warning(
             "QueueLens captured job event: %s",
             event.model_dump_json(),
         )
