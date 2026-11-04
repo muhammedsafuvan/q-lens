@@ -1,5 +1,6 @@
 from celery import Celery
 
+import app.workers.instrumentation  # noqa: F401
 from app.core.config import get_settings
 
 settings = get_settings()

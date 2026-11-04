@@ -1,0 +1,144 @@
+import logging
+from collections import deque
+from threading import Lock
+from typing import Any
+
+from celery import signals
+
+from app.schemas.events import JobEvent, JobEventType
+
+logger = logging.getLogger(__name__)
+
+_event_buffer: deque[JobEvent] = deque(maxlen=1000)
+_buffer_lock = Lock()
+
+
+def get_recent_events() -> list[JobEvent]:
+    """Return a snapshot of recently captured events."""
+    with _buffer_lock:
+        return list(_event_buffer)
+
+
+def _record_event(
+    *,
+    task_id: str | None,
+    task_name: str | None,
+    event_type: JobEventType,
+    request: Any = None,
+) -> None:
+    """Create and store an event without affecting task execution."""
+    if not task_id or not task_name:
+        return
+
+    try:
+        delivery_info = getattr(request, "delivery_info", None) or {}
+
+        event = JobEvent(
+            task_id=task_id,
+            task_name=task_name,
+            event_type=event_type,
+            worker_name=getattr(request, "hostname", None),
+            queue_name=delivery_info.get("queue"),
+            attempt=getattr(request, "retries", 0) + 1,
+        )
+
+        with _buffer_lock:
+            _event_buffer.append(event)
+
+        logger.info(
+            "QueueLens captured job event: %s",
+            event.model_dump_json(),
+        )
+    except Exception:
+        # Telemetry must never break application task execution.
+        logger.exception("QueueLens failed to capture a job event")
+
+
+@signals.task_received.connect(
+    weak=False,
+    dispatch_uid="queuelens_task_received",
+)
+def on_task_received(request=None, **kwargs: Any) -> None:
+    if request is None:
+        return
+
+    _record_event(
+        task_id=getattr(request, "id", None),
+        task_name=getattr(request, "name", None),
+        event_type=JobEventType.RECEIVED,
+        request=request,
+    )
+
+
+@signals.task_prerun.connect(
+    weak=False,
+    dispatch_uid="queuelens_task_started",
+)
+def on_task_started(task_id=None, task=None, **kwargs: Any) -> None:
+    if task is None:
+        return
+
+    request = task.request
+
+    _record_event(
+        task_id=task_id,
+        task_name=task.name,
+        event_type=JobEventType.STARTED,
+        request=request,
+    )
+
+
+@signals.task_success.connect(
+    weak=False,
+    dispatch_uid="queuelens_task_succeeded",
+)
+def on_task_succeeded(sender=None, **kwargs: Any) -> None:
+    if sender is None:
+        return
+
+    request = sender.request
+
+    _record_event(
+        task_id=request.id,
+        task_name=sender.name,
+        event_type=JobEventType.SUCCEEDED,
+        request=request,
+    )
+
+
+@signals.task_failure.connect(
+    weak=False,
+    dispatch_uid="queuelens_task_failed",
+)
+def on_task_failed(
+    sender=None,
+    task_id=None,
+    **kwargs: Any,
+) -> None:
+    if sender is None:
+        return
+
+    request = sender.request
+
+    _record_event(
+        task_id=task_id or request.id,
+        task_name=sender.name,
+        event_type=JobEventType.FAILED,
+        request=request,
+    )
+
+
+@signals.task_retry.connect(
+    weak=False,
+    dispatch_uid="queuelens_task_retried",
+)
+def on_task_retried(sender=None, request=None, **kwargs: Any) -> None:
+    if sender is None or request is None:
+        return
+
+    _record_event(
+        task_id=request.id,
+        task_name=sender.name,
+        event_type=JobEventType.RETRIED,
+        request=request,
+    )

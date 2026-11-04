@@ -1,5 +1,5 @@
 from celery.result import AsyncResult
-from fastapi import APIRouter
+from fastapi import APIRouter, status
 
 from app.schemas.jobs import DemoJobRequest
 from app.workers.celery_app import celery_app
@@ -8,7 +8,7 @@ from app.workers.tasks.demo import process_demo_job
 router = APIRouter(prefix="/demo/jobs", tags=["Demo Jobs"])
 
 
-@router.post("", status_code=202)
+@router.post("", status_code=status.HTTP_202_ACCEPTED)
 def enqueue_demo_job(payload: DemoJobRequest):
     task = process_demo_job.delay(payload.duration_seconds)
 

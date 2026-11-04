@@ -1,0 +1,45 @@
+import uuid
+from datetime import UTC, datetime
+from enum import StrEnum
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+
+class JobEventType(StrEnum):
+    RECEIVED = "received"
+    STARTED = "started"
+    SUCCEEDED = "succeeded"
+    FAILED = "failed"
+    RETRIED = "retried"
+
+
+class JobEvent(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    event_id: uuid.UUID = Field(default_factory=uuid.uuid4)
+    task_id: str = Field(min_length=1)
+    task_name: str = Field(min_length=1)
+    event_type: JobEventType
+    occurred_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+
+    worker_name: str | None = None
+    queue_name: str | None = None
+    attempt: int = Field(default=1, ge=1)
+
+    @field_validator("occurred_at")
+    @classmethod
+    def require_timezone(cls, value: datetime) -> datetime:
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError("occurred_at must include timezone information")
+        return value
+
+
+class JobEventBatch(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    events: list[JobEvent] = Field(min_length=1, max_length=500)
+
+
+class JobEventBatchResponse(BaseModel):
+    accepted_count: int
+    duplicate_count: int
