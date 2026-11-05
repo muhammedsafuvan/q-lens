@@ -92,7 +92,7 @@ def test_failed_request_retains_events():
 
     sender = create_sender(buffer, handler)
 
-    assert sender.flush_once() == 0
+    assert sender.flush_once() is None
     assert len(buffer) == 1
 
     sender.close()
@@ -114,7 +114,7 @@ def test_invalid_response_retains_events():
 
     sender = create_sender(buffer, handler)
 
-    assert sender.flush_once() == 0
+    assert sender.flush_once() is None
     assert len(buffer) == 1
 
     sender.close()

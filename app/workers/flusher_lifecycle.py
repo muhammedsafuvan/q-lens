@@ -1,4 +1,6 @@
+
 import logging
+import os
 
 from celery import signals
 
@@ -10,10 +12,18 @@ from app.workers.instrumentation import event_buffer
 logger = logging.getLogger(__name__)
 
 _flusher: EventFlusher | None = None
+_flusher_pid: int | None = None
 
 
 def start_flusher() -> None:
-    global _flusher
+    global _flusher, _flusher_pid
+
+    current_pid = os.getpid()
+
+    # Never reuse a flusher inherited from another process.
+    if _flusher_pid != current_pid:
+        _flusher = None
+        _flusher_pid = current_pid
 
     if _flusher is not None:
         return
@@ -34,15 +44,27 @@ def start_flusher() -> None:
 
     _flusher.start()
 
+    logger.info(
+        "QueueLens flusher initialized in process %s",
+        current_pid,
+    )
+
 
 def stop_flusher() -> None:
-    global _flusher
+    global _flusher, _flusher_pid
+
+    current_pid = os.getpid()
+
+    # Only stop a flusher owned by this process.
+    if _flusher_pid != current_pid:
+        return
 
     if _flusher is None:
         return
 
     _flusher.stop()
     _flusher = None
+    _flusher_pid = None
 
 
 @signals.worker_ready.connect(

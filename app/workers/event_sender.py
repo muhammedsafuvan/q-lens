@@ -29,7 +29,7 @@ class EventSender:
         self._client = client or httpx.Client(timeout=timeout)
         self._owns_client = client is None
 
-    def flush_once(self) -> int:
+    def flush_once(self) -> int | None:
         """
         Send one batch of events.
 
@@ -77,7 +77,7 @@ class EventSender:
                 "Retaining %s events for retry.",
                 len(events),
             )
-            return 0
+            return None
 
         acknowledged_count = self._buffer.acknowledge(
             {event.event_id for event in events}

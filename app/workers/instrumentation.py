@@ -46,7 +46,7 @@ def _record_event(
             )
             return
 
-        logger.warning(
+        logger.info(
             "QueueLens captured job event: %s",
             event.model_dump_json(),
         )
