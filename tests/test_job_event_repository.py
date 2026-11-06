@@ -1,9 +1,11 @@
+
 from uuid import uuid4
 
-from sqlalchemy import delete
+from sqlalchemy import delete, select
 
 from app.db.session import SessionLocal
 from app.models.job_event import JobEvent as JobEventModel
+from app.models.workspace import Workspace
 from app.repositories.job_events import insert_job_event
 from app.schemas.events import JobEvent, JobEventType
 
@@ -20,10 +22,21 @@ def test_insert_job_event_is_idempotent():
 
     with SessionLocal() as db:
         try:
-            first_insert = insert_job_event(db, event)
+            workspace_id = db.scalar(
+                select(Workspace.id).where(
+                    Workspace.slug == "queuelens-development"
+                )
+            )
+
+            assert workspace_id is not None, (
+                "Development workspace not found. "
+                "Run scripts/bootstrap_dev_workspace.py first."
+            )
+
+            first_insert = insert_job_event(db, event, workspace_id)
             db.commit()
 
-            second_insert = insert_job_event(db, event)
+            second_insert = insert_job_event(db, event, workspace_id)
             db.commit()
 
             assert first_insert is True
@@ -32,6 +45,8 @@ def test_insert_job_event_is_idempotent():
         finally:
             db.rollback()
             db.execute(
-                delete(JobEventModel).where(JobEventModel.event_id == event.event_id)
+                delete(JobEventModel).where(
+                    JobEventModel.event_id == event.event_id
+                )
             )
             db.commit()

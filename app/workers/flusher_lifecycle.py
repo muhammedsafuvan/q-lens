@@ -33,6 +33,7 @@ def start_flusher() -> None:
     sender = EventSender(
         buffer=event_buffer,
         endpoint=settings.ingestion_api_url,
+        api_key=settings.queuelens_api_key,
         batch_size=settings.event_batch_size,
         timeout=settings.event_sender_timeout,
     )

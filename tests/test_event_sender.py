@@ -27,6 +27,7 @@ def create_sender(
     return EventSender(
         buffer=buffer,
         endpoint=ENDPOINT,
+        api_key="test-api-key",
         batch_size=100,
         client=client,
     )

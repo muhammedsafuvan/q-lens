@@ -14,6 +14,7 @@ dependencies = [
     "redis>=8.1.0",
     "sqlalchemy>=2.1.6",
     "uvicorn[standard]>=0.54.0",
+    "queuelens",
 ]
 
 [dependency-groups]
@@ -28,3 +29,9 @@ dev = [
 testpaths = ["tests"]
 asyncio_mode = "strict"
 asyncio_default_fixture_loop_scope = "function"
+
+[tool.uv.workspace]
+members = ["sdk"]
+
+[tool.uv.sources]
+queuelens = { workspace = true }

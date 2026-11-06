@@ -58,7 +58,7 @@ services:
           "CMD",
           "python",
           "-c",
-          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health', timeout=3)"
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/internal/v1/health', timeout=3)"
         ]
       interval: 10s
       timeout: 5s
@@ -78,7 +78,7 @@ services:
       REDIS_URL: redis://redis:6379/0
       CELERY_BROKER_URL: redis://redis:6379/1
       CELERY_RESULT_BACKEND: redis://redis:6379/2
-      INGESTION_API_URL: http://api:8000/api/v1/events/batch
+      INGESTION_API_URL: http://api:8000/internal/v1/events/batch
       EVENT_BATCH_SIZE: 100
       EVENT_SENDER_TIMEOUT: 5.0
       EVENT_FLUSH_INTERVAL: 5.0

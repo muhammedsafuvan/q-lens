@@ -2,6 +2,12 @@ version = 1
 revision = 3
 requires-python = ">=3.12"
 
+[manifest]
+members = [
+    "qlens",
+    "queuelens",
+]
+
 [[package]]
 name = "amqp"
 version = "5.4.2"
@@ -713,6 +719,7 @@ dependencies = [
     { name = "packaging" },
     { name = "psycopg", extra = ["binary"] },
     { name = "pydantic-settings" },
+    { name = "queuelens" },
     { name = "redis" },
     { name = "sqlalchemy" },
     { name = "uvicorn", extra = ["standard"] },
@@ -734,6 +741,7 @@ requires-dist = [
     { name = "packaging", specifier = ">=26.3" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.3.7" },
     { name = "pydantic-settings", specifier = ">=2.16.2" },
+    { name = "queuelens", editable = "sdk" },
     { name = "redis", specifier = ">=8.1.0" },
     { name = "sqlalchemy", specifier = ">=2.1.6" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.54.0" },
@@ -746,6 +754,28 @@ dev = [
     { name = "pytest-asyncio", specifier = ">=1.4.1.post1" },
     { name = "ruff", specifier = ">=0.17.3" },
 ]
+
+[[package]]
+name = "queuelens"
+version = "0.1.0"
+source = { editable = "sdk" }
+dependencies = [
+    { name = "httpx" },
+    { name = "pydantic" },
+]
+
+[package.optional-dependencies]
+celery = [
+    { name = "celery" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "celery", marker = "extra == 'celery'", specifier = ">=5.6.3" },
+    { name = "httpx", specifier = ">=0.28.1" },
+    { name = "pydantic", specifier = ">=2.0" },
+]
+provides-extras = ["celery"]
 
 [[package]]
 name = "redis"

@@ -16,6 +16,7 @@ class EventSender:
         self,
         buffer: EventBuffer,
         endpoint: str,
+        api_key: str,
         batch_size: int = 100,
         timeout: float = 5.0,
         client: httpx.Client | None = None,
@@ -25,6 +26,7 @@ class EventSender:
 
         self._buffer = buffer
         self._endpoint = endpoint
+        self._api_key = api_key
         self._batch_size = batch_size
         self._client = client or httpx.Client(timeout=timeout)
         self._owns_client = client is None
@@ -53,6 +55,9 @@ class EventSender:
             response = self._client.post(
                 self._endpoint,
                 json=payload,
+                headers={
+                    "Authorization": f"Bearer {self._api_key}",
+                },
             )
             response.raise_for_status()
 

@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     event_batch_size: int = 100
     event_sender_timeout: float = 5.0
     event_flush_interval: float = 5.0
+    queuelens_api_key: str
 
     model_config = SettingsConfigDict(
         env_file=".env",

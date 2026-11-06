@@ -1,8 +1,8 @@
+
 from celery import Celery
 
-import app.workers.flusher_lifecycle
-import app.workers.instrumentation  # noqa: F401
 from app.core.config import get_settings
+from queuelens import QueueLens
 
 settings = get_settings()
 
@@ -14,16 +14,22 @@ celery_app = Celery(
 )
 
 celery_app.conf.update(
-    # Serialization
     task_serializer="json",
     accept_content=["json"],
     result_serializer="json",
-    # Timezone
     timezone="UTC",
     enable_utc=True,
-    # Task tracking
     task_track_started=True,
     result_expires=3600,
-    # Broker reliability
     broker_connection_retry_on_startup=True,
 )
+
+queuelens = QueueLens(
+    api_key=settings.queuelens_api_key,
+    endpoint=settings.ingestion_api_url,
+    batch_size=settings.event_batch_size,
+    flush_interval=settings.event_flush_interval,
+    timeout=settings.event_sender_timeout,
+)
+
+queuelens.instrument(celery_app)

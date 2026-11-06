@@ -4,6 +4,7 @@ from datetime import datetime
 from sqlalchemy import (
     CheckConstraint,
     DateTime,
+    ForeignKey,
     Index,
     Integer,
     String,
@@ -75,6 +76,12 @@ class JobEvent(Base):
         Integer,
         nullable=False,
         default=1,
+    )
+
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("workspaces.id", ondelete="RESTRICT"),
+        nullable=False,
     )
 
     created_at: Mapped[datetime] = mapped_column(
