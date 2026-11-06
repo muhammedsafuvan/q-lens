@@ -1,5 +1,6 @@
 import hashlib
 from datetime import UTC, datetime
+from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -13,8 +14,11 @@ bearer_scheme = HTTPBearer(auto_error=False)
 
 
 def get_current_workspace(
-    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
-    db: Session = Depends(get_db),
+    credentials: Annotated[
+        HTTPAuthorizationCredentials | None,
+        Depends(bearer_scheme),
+    ],
+    db: Annotated[Session, Depends(get_db)],
 ):
     if credentials is None:
         raise HTTPException(

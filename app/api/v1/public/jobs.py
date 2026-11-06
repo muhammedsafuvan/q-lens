@@ -1,3 +1,4 @@
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -22,9 +23,9 @@ router = APIRouter(prefix="/jobs", tags=["Public Jobs"])
 
 @router.get("", response_model=JobListResponse)
 def list_jobs(
-    workspace_id: UUID = Depends(get_current_workspace),
-    db: Session = Depends(get_db),
-    limit: int = Query(default=10, ge=1, le=100),
+    workspace_id: Annotated[UUID, Depends(get_current_workspace)],
+    db: Annotated[Session, Depends(get_db)],
+    limit: Annotated[int, Query(ge=1, le=100)] = 10,
 ):
     jobs = get_workspace_jobs(db, workspace_id, limit)
     total = count_workspace_jobs(db, workspace_id)
@@ -48,8 +49,8 @@ def list_jobs(
 @router.get("/{task_id}", response_model=JobDetail)
 def get_job(
     task_id: str,
-    workspace_id: UUID = Depends(get_current_workspace),
-    db: Session = Depends(get_db),
+    workspace_id: Annotated[UUID, Depends(get_current_workspace)],
+    db: Annotated[Session, Depends(get_db)],
 ):
     events = get_workspace_job_events(db, workspace_id, task_id)
 
