@@ -1,8 +1,9 @@
 import uuid
 
+from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session, aliased
-from sqlalchemy import func, select
+
 from app.models.job_event import JobEvent as JobEventModel
 from app.schemas.events import JobEvent
 

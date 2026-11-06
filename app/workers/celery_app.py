@@ -1,8 +1,8 @@
 
 from celery import Celery
+from queuelens import QueueLens
 
 from app.core.config import get_settings
-from queuelens import QueueLens
 
 settings = get_settings()
 
