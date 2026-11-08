@@ -3,7 +3,6 @@ import uuid
 
 from tasks import fail_order, process_order, retry_order
 
-
 TASKS = {
     "success": process_order,
     "failure": fail_order,

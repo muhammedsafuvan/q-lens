@@ -55,3 +55,22 @@ def test_job_event_rejects_naive_datetime():
             event_type=JobEventType.STARTED,
             occurred_at=datetime(2026, 11, 4, 10, 0, 0),
         )
+
+def test_job_event_accepts_diagnostic_metadata():
+    event = JobEvent(
+        task_id="task-123",
+        task_name="queuelens.demo.process",
+        event_type=JobEventType.FAILED,
+        attempt=2,
+        exception_type="ValueError",
+        exception_message="Invalid order",
+        traceback="Traceback (most recent call last): ...",
+        exchange="orders",
+        routing_key="orders.process",
+    )
+
+    assert event.exception_type == "ValueError"
+    assert event.exception_message == "Invalid order"
+    assert event.traceback.startswith("Traceback")
+    assert event.exchange == "orders"
+    assert event.routing_key == "orders.process"

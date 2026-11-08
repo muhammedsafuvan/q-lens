@@ -8,9 +8,10 @@ from sqlalchemy import (
     Index,
     Integer,
     String,
-    Uuid,
-    func,
+    Text,
+    text,
 )
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
@@ -19,27 +20,10 @@ from app.db.base import Base
 class JobEvent(Base):
     __tablename__ = "job_events"
 
-    __table_args__ = (
-        CheckConstraint("attempt >= 1", name="ck_job_events_attempt_positive"),
-        CheckConstraint(
-            "event_type IN ('received', 'started', 'succeeded', 'failed', 'retried')",
-            name="ck_job_events_event_type",
-        ),
-        Index(
-            "ix_job_events_task_id_occurred_at",
-            "task_id",
-            "occurred_at",
-        ),
-        Index(
-            "ix_job_events_event_type_occurred_at",
-            "event_type",
-            "occurred_at",
-        ),
-    )
-
     event_id: Mapped[uuid.UUID] = mapped_column(
-        Uuid(as_uuid=True),
+        UUID(as_uuid=True),
         primary_key=True,
+        default=uuid.uuid4,
     )
 
     task_id: Mapped[str] = mapped_column(
@@ -76,16 +60,64 @@ class JobEvent(Base):
         Integer,
         nullable=False,
         default=1,
+        server_default=text("1"),
     )
 
     workspace_id: Mapped[uuid.UUID] = mapped_column(
-        Uuid(as_uuid=True),
-        ForeignKey("workspaces.id", ondelete="RESTRICT"),
+        UUID(as_uuid=True),
+        ForeignKey("workspaces.id", ondelete="CASCADE"),
         nullable=False,
+    )
+
+    exception_type: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True,
+    )
+
+    exception_message: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )
+
+    traceback: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )
+
+    exchange: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True,
+    )
+
+    routing_key: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True,
     )
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        server_default=func.now(),
         nullable=False,
+        server_default=text("now()"),
+    )
+
+    __table_args__ = (
+        CheckConstraint(
+            "attempt >= 1",
+            name="ck_job_events_attempt_positive",
+        ),
+        CheckConstraint(
+            "event_type IN "
+            "('received', 'started', 'succeeded', 'failed', 'retried')",
+            name="ck_job_events_event_type",
+        ),
+        Index(
+            "ix_job_events_task_occurred",
+            "task_id",
+            "occurred_at",
+        ),
+        Index(
+            "ix_job_events_type_occurred",
+            "event_type",
+            "occurred_at",
+        ),
     )

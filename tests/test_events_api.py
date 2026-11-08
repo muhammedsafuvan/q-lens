@@ -73,10 +73,15 @@ def get_payload():
                 "event_id": str(EVENT_IDS[1]),
                 "task_id": "test-task-001",
                 "task_name": "queuelens.demo.process",
-                "event_type": "succeeded",
+                "event_type": "failed",
                 "worker_name": "worker-1",
                 "queue_name": "default",
-                "attempt": 1,
+                "attempt": 2,
+                "exception_type": "ValueError",
+                "exception_message": "Invalid order",
+                "traceback": "Traceback (most recent call last): ...",
+                "exchange": "orders",
+                "routing_key": "orders.process",
             },
         ]
     }
@@ -93,6 +98,16 @@ def test_ingest_events_successfully(client):
         "accepted_count": 2,
         "duplicate_count": 0,
     }
+
+    with SessionLocal() as db:
+        event = db.get(JobEventModel, EVENT_IDS[1])
+
+    assert event is not None
+    assert event.exception_type == "ValueError"
+    assert event.exception_message == "Invalid order"
+    assert event.traceback.startswith("Traceback")
+    assert event.exchange == "orders"
+    assert event.routing_key == "orders.process"
 
 
 def test_ingest_duplicate_events(client):
@@ -154,3 +169,38 @@ def test_ingest_rejects_missing_api_key():
         assert response.status_code == 401
     finally:
         app.dependency_overrides.clear()
+
+def test_public_job_endpoints_include_diagnostics(client):
+    ingestion_response = client.post(
+        INGESTION_URL,
+        json=get_payload(),
+    )
+
+    assert ingestion_response.status_code == 202
+
+    list_response = client.get("/api/v1/jobs")
+
+    assert list_response.status_code == 200
+
+    job = next(
+        item
+        for item in list_response.json()["items"]
+        if item["task_id"] == "test-task-001"
+    )
+
+    assert job["exception_type"] == "ValueError"
+    assert job["exception_message"] == "Invalid order"
+    assert job["exchange"] == "orders"
+    assert job["routing_key"] == "orders.process"
+
+    detail_response = client.get("/api/v1/jobs/test-task-001")
+
+    assert detail_response.status_code == 200
+
+    failed_event = next(
+        event
+        for event in detail_response.json()["events"]
+        if event["event_id"] == str(EVENT_IDS[1])
+    )
+
+    assert failed_event["traceback"].startswith("Traceback")
