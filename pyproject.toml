@@ -1,7 +1,7 @@
 [project]
 name = "qlens"
 version = "0.1.0"
-description = "Add your description here"
+description = "QueueLens backend API"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -11,10 +11,10 @@ dependencies = [
     "packaging>=26.3",
     "psycopg[binary]>=3.3.7",
     "pydantic-settings>=2.16.2",
+    "queuelens[celery]==0.1.1",
     "redis>=8.1.0",
     "sqlalchemy>=2.1.6",
     "uvicorn[standard]>=0.54.0",
-    "queuelens",
 ]
 
 [dependency-groups]
@@ -29,9 +29,3 @@ dev = [
 testpaths = ["tests"]
 asyncio_mode = "strict"
 asyncio_default_fixture_loop_scope = "function"
-
-[tool.uv.workspace]
-members = ["sdk"]
-
-[tool.uv.sources]
-queuelens = { workspace = true }

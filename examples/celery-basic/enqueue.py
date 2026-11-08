@@ -1,6 +1,7 @@
 import sys
 import uuid
 
+from celery import current_app
 from tasks import fail_order, process_order, retry_order
 
 TASKS = {
@@ -15,14 +16,18 @@ def main():
         print("Usage: python enqueue.py [success|failure|retry]")
         raise SystemExit(1)
 
-    scenario = sys.argv[1]
+    task = TASKS[sys.argv[1]]
     order_id = str(uuid.uuid4())
 
-    task = TASKS[scenario].delay(order_id)
+    print("Broker:", task.app.conf.broker_url)
+    print("Task:", task.name)
 
-    print(f"Scenario: {scenario}")
-    print(f"Order ID: {order_id}")
-    print(f"Celery task ID: {task.id}")
+    result = task.apply_async(args=[order_id])
+
+    print("Scenario:", sys.argv[1])
+    print("Order ID:", order_id)
+    print("Celery task ID:", result.id)
+    print("Task state:", result.state)
 
 
 if __name__ == "__main__":

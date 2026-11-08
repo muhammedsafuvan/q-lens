@@ -1,8 +1,10 @@
-
 import os
 
 from celery import Celery
+from dotenv import load_dotenv
 from queuelens import QueueLens
+
+load_dotenv()
 
 app = Celery(
     "orders",
