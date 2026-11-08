@@ -39,6 +39,10 @@ def list_jobs(
             worker_name=job.worker_name,
             queue_name=job.queue_name,
             attempt=job.attempt,
+            exception_type=job.exception_type,
+            exception_message=job.exception_message,
+            exchange=job.exchange,
+            routing_key=job.routing_key,
         )
         for job in jobs
     ]

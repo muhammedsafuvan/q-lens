@@ -18,6 +18,11 @@ def test_insert_job_event_is_idempotent():
         event_type=JobEventType.STARTED,
         worker_name="test-worker",
         queue_name="default",
+        exception_type="ValueError",
+        exception_message="Invalid order",
+        traceback="Traceback (most recent call last): ...",
+        exchange="orders",
+        routing_key="orders.process",
     )
 
     with SessionLocal() as db:
@@ -41,6 +46,19 @@ def test_insert_job_event_is_idempotent():
 
             assert first_insert is True
             assert second_insert is False
+
+            persisted_event = db.scalar(
+                select(JobEventModel).where(
+                    JobEventModel.event_id == event.event_id
+                )
+            )
+
+            assert persisted_event is not None
+            assert persisted_event.exception_type == "ValueError"
+            assert persisted_event.exception_message == "Invalid order"
+            assert persisted_event.traceback.startswith("Traceback")
+            assert persisted_event.exchange == "orders"
+            assert persisted_event.routing_key == "orders.process"
 
         finally:
             db.rollback()

@@ -1,4 +1,3 @@
-
 from datetime import datetime
 from uuid import UUID
 
@@ -13,6 +12,7 @@ class DemoJobRequest(BaseModel):
         description="Simulated job duration in seconds",
     )
 
+
 class JobEventResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -21,9 +21,17 @@ class JobEventResponse(BaseModel):
     task_name: str
     event_type: str
     occurred_at: datetime
-    worker_name: str | None
-    queue_name: str | None
+
+    worker_name: str | None = None
+    queue_name: str | None = None
     attempt: int
+
+    exception_type: str | None = None
+    exception_message: str | None = None
+    traceback: str | None = None
+
+    exchange: str | None = None
+    routing_key: str | None = None
 
 
 class JobSummary(BaseModel):
@@ -31,9 +39,16 @@ class JobSummary(BaseModel):
     task_name: str
     status: str
     occurred_at: datetime
-    worker_name: str | None
-    queue_name: str | None
+
+    worker_name: str | None = None
+    queue_name: str | None = None
     attempt: int
+
+    exception_type: str | None = None
+    exception_message: str | None = None
+
+    exchange: str | None = None
+    routing_key: str | None = None
 
 
 class JobDetail(BaseModel):
