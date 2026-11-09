@@ -1,7 +1,6 @@
 import sys
 import uuid
 
-from celery import current_app
 from tasks import fail_order, process_order, retry_order
 
 TASKS = {

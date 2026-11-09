@@ -15,7 +15,7 @@ EVENT_IDS = [
     uuid.UUID("22222222-2222-4222-8222-222222222222"),
 ]
 
-INGESTION_URL = "/internal/v1/events/batch"
+INGESTION_URL = "/api/v1/events/batch"
 
 
 def override_get_db():

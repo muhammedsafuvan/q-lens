@@ -4,15 +4,6 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class DemoJobRequest(BaseModel):
-    duration_seconds: int = Field(
-        default=3,
-        ge=1,
-        le=30,
-        description="Simulated job duration in seconds",
-    )
-
-
 class JobEventResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
