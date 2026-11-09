@@ -68,7 +68,7 @@ jobs:
             up
 
       - name: Bootstrap development workspace
-        run: uv run python scripts/bootstrap_dev_workspace.py > /dev/null
+        run: PYTHONPATH=. uv run python scripts/bootstrap_dev_workspace.py
 
       - name: Ruff lint
         run: uv run ruff check .
