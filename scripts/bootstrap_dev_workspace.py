@@ -1,4 +1,3 @@
-
 import hashlib
 import secrets
 import uuid
@@ -23,9 +22,7 @@ def generate_api_key() -> tuple[str, str]:
 
 def bootstrap() -> None:
     with SessionLocal() as db:
-        workspace = db.scalar(
-            select(Workspace).where(Workspace.slug == WORKSPACE_SLUG)
-        )
+        workspace = db.scalar(select(Workspace).where(Workspace.slug == WORKSPACE_SLUG))
 
         if workspace is None:
             workspace = Workspace(

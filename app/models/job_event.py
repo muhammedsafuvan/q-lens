@@ -106,8 +106,7 @@ class JobEvent(Base):
             name="ck_job_events_attempt_positive",
         ),
         CheckConstraint(
-            "event_type IN "
-            "('received', 'started', 'succeeded', 'failed', 'retried')",
+            "event_type IN ('received', 'started', 'succeeded', 'failed', 'retried')",
             name="ck_job_events_event_type",
         ),
         Index(

@@ -70,8 +70,5 @@ def get_job(
         task_id=task_id,
         task_name=latest.task_name,
         status=latest.event_type,
-        events=[
-            JobEventResponse.model_validate(event)
-            for event in events
-        ],
+        events=[JobEventResponse.model_validate(event) for event in events],
     )

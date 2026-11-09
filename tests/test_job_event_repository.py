@@ -1,4 +1,3 @@
-
 from uuid import uuid4
 
 from sqlalchemy import delete, select
@@ -28,9 +27,7 @@ def test_insert_job_event_is_idempotent():
     with SessionLocal() as db:
         try:
             workspace_id = db.scalar(
-                select(Workspace.id).where(
-                    Workspace.slug == "queuelens-development"
-                )
+                select(Workspace.id).where(Workspace.slug == "queuelens-development")
             )
 
             assert workspace_id is not None, (
@@ -48,9 +45,7 @@ def test_insert_job_event_is_idempotent():
             assert second_insert is False
 
             persisted_event = db.scalar(
-                select(JobEventModel).where(
-                    JobEventModel.event_id == event.event_id
-                )
+                select(JobEventModel).where(JobEventModel.event_id == event.event_id)
             )
 
             assert persisted_event is not None
@@ -63,8 +58,6 @@ def test_insert_job_event_is_idempotent():
         finally:
             db.rollback()
             db.execute(
-                delete(JobEventModel).where(
-                    JobEventModel.event_id == event.event_id
-                )
+                delete(JobEventModel).where(JobEventModel.event_id == event.event_id)
             )
             db.commit()

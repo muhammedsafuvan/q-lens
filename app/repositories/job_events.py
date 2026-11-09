@@ -55,6 +55,7 @@ def insert_job_events(
     result = db.execute(statement)
     return len(result.scalars().all())
 
+
 def get_workspace_jobs(
     db: Session,
     workspace_id: uuid.UUID,
@@ -93,9 +94,8 @@ def count_workspace_jobs(
     db: Session,
     workspace_id: uuid.UUID,
 ) -> int:
-    statement = (
-        select(func.count(func.distinct(JobEventModel.task_id)))
-        .where(JobEventModel.workspace_id == workspace_id)
+    statement = select(func.count(func.distinct(JobEventModel.task_id))).where(
+        JobEventModel.workspace_id == workspace_id
     )
 
     return db.scalar(statement) or 0

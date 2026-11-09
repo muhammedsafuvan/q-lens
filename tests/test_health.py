@@ -43,9 +43,7 @@ def test_readiness_check_postgres_unhealthy(monkeypatch):
     monkeypatch.setattr(
         engine,
         "connect",
-        lambda: (_ for _ in ()).throw(
-            SQLAlchemyError("Database unavailable")
-        ),
+        lambda: (_ for _ in ()).throw(SQLAlchemyError("Database unavailable")),
     )
 
     response = client.get("/ready")

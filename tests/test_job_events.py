@@ -56,6 +56,7 @@ def test_job_event_rejects_naive_datetime():
             occurred_at=datetime(2026, 11, 4, 10, 0, 0),
         )
 
+
 def test_job_event_accepts_diagnostic_metadata():
     event = JobEvent(
         task_id="task-123",

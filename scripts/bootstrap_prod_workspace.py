@@ -1,4 +1,3 @@
-
 import hashlib
 import secrets
 import uuid
@@ -26,9 +25,7 @@ def bootstrap() -> None:
     with SessionLocal() as db:
         try:
             workspace = db.scalar(
-                select(Workspace).where(
-                    Workspace.slug == WORKSPACE_SLUG
-                )
+                select(Workspace).where(Workspace.slug == WORKSPACE_SLUG)
             )
 
             if workspace is None:

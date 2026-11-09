@@ -23,7 +23,6 @@ def ingest_events(
     db: Session = Depends(get_db),
 ) -> JobEventBatchResponse:
     try:
-
         inserted_count = insert_job_events(
             db,
             payload.events,

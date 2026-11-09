@@ -24,10 +24,7 @@ def fail_order(order_id: str):
     max_retries=1,
 )
 def retry_order(self, order_id: str):
-    print(
-        f"Processing order: {order_id}, "
-        f"attempt: {self.request.retries + 1}"
-    )
+    print(f"Processing order: {order_id}, attempt: {self.request.retries + 1}")
 
     if self.request.retries == 0:
         raise self.retry(

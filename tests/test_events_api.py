@@ -1,4 +1,3 @@
-
 import uuid
 
 import pytest
@@ -169,6 +168,7 @@ def test_ingest_rejects_missing_api_key():
         assert response.status_code == 401
     finally:
         app.dependency_overrides.clear()
+
 
 def test_public_job_endpoints_include_diagnostics(client):
     ingestion_response = client.post(

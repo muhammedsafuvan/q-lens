@@ -26,9 +26,7 @@ def get_current_workspace(
             detail="Missing API key",
         )
 
-    key_hash = hashlib.sha256(
-        credentials.credentials.encode()
-    ).hexdigest()
+    key_hash = hashlib.sha256(credentials.credentials.encode()).hexdigest()
 
     api_key = db.scalar(
         select(APIKey).where(
