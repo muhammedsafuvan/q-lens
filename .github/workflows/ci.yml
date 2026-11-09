@@ -78,3 +78,39 @@ jobs:
 
       - name: Run tests
         run: uv run pytest -v
+  production-migrations:
+    name: Production Database Migrations
+    needs: quality
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up DBmate
+        run: |
+          curl -fsSL \
+            https://github.com/amacneil/dbmate/releases/download/v2.33.0/dbmate-linux-amd64 \
+            -o /usr/local/bin/dbmate
+          chmod +x /usr/local/bin/dbmate
+          dbmate --version
+
+      - name: Apply production migrations
+        env:
+          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+        run: |
+          if [ -z "$NEON_DATABASE_URL" ]; then
+            echo "NEON_DATABASE_URL is not configured in the production environment."
+            exit 1
+          fi
+
+          dbmate \
+            --url "$NEON_DATABASE_URL" \
+            --migrations-dir db/migrations \
+            --no-dump-schema \
+            up
