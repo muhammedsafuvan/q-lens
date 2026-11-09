@@ -11,3 +11,4 @@ wheels/
 
 .env
 /road_map.md
+.env.test
