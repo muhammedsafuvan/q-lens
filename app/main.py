@@ -4,6 +4,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from app.api.health import router as health_router
 from app.api.v1.auth.router import router as auth_router
 from app.api.v1.public.router import router as public_router
+from app.api.v1.workspaces.api_keys import router as workspace_api_keys_router
 from app.core.config import get_settings
 
 
@@ -29,6 +30,7 @@ def create_app() -> FastAPI:
     app.include_router(health_router)
     app.include_router(public_router, prefix="/api/v1")
     app.include_router(auth_router, prefix="/api/v1")
+    app.include_router(workspace_api_keys_router, prefix="/api/v1")
 
     return app
 

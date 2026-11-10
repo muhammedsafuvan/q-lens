@@ -1,22 +1,14 @@
-import hashlib
-import secrets
 import uuid
 
 from sqlalchemy import select
 
+from app.core.api_keys import generate_api_key
 from app.db.session import SessionLocal
 from app.models import APIKey, Workspace
 
 WORKSPACE_NAME = "QueueLens Production"
 WORKSPACE_SLUG = "queuelens-production"
 API_KEY_NAME = "Production SDK"
-API_KEY_PREFIX = "ql_live_"
-
-
-def generate_api_key() -> tuple[str, str]:
-    plaintext_key = f"{API_KEY_PREFIX}{secrets.token_urlsafe(32)}"
-    key_hash = hashlib.sha256(plaintext_key.encode()).hexdigest()
-    return plaintext_key, key_hash
 
 
 def bootstrap() -> None:
@@ -46,7 +38,7 @@ def bootstrap() -> None:
             )
 
             if api_key is None:
-                plaintext_key, key_hash = generate_api_key()
+                plaintext_key, key_hash = generate_api_key("production")
 
                 api_key = APIKey(
                     id=uuid.uuid4(),
