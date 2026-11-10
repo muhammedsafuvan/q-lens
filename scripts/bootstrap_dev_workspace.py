@@ -3,6 +3,7 @@ import uuid
 
 from sqlalchemy import select, update
 
+from app.core.api_keys import get_api_key_prefix
 from app.core.config import get_settings
 from app.db.session import SessionLocal
 from app.models import APIKey, JobEvent, Workspace
@@ -15,6 +16,14 @@ API_KEY_NAME = "Local Development"
 def bootstrap() -> None:
     settings = get_settings()
     plaintext_key = settings.queuelens_api_key
+    expected_prefix = get_api_key_prefix(settings.app_env)
+
+    if not plaintext_key.startswith(expected_prefix):
+        raise ValueError(
+            f"QUEUELENS_API_KEY must start with {expected_prefix!r} "
+            f"when APP_ENV={settings.app_env!r}."
+        )
+
     key_hash = hashlib.sha256(plaintext_key.encode()).hexdigest()
 
     with SessionLocal() as db:

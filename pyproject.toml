@@ -5,11 +5,14 @@ description = "QueueLens backend API"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "authlib>=1.6.0",
     "fastapi>=0.162.0",
     "httpx>=0.28.1",
+    "itsdangerous>=2.2.0",
     "packaging>=26.3",
     "psycopg[binary]>=3.3.7",
     "pydantic-settings>=2.16.2",
+    "pyjwt[crypto]>=2.15.1",
     "sqlalchemy>=2.1.6",
     "uvicorn[standard]>=0.54.0",
 ]
