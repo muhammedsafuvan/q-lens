@@ -1,4 +1,6 @@
-from pydantic import BaseModel, ConfigDict, Field
+from uuid import UUID
+
+from pydantic import BaseModel, Field
 
 
 class RefreshRequest(BaseModel):
@@ -17,9 +19,8 @@ class TokenResponse(BaseModel):
 
 
 class CurrentUserResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: str
+    id: UUID
     email: str
-    name: str
+    name: str | None
     avatar_url: str | None
+    workspace_id: UUID

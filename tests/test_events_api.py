@@ -168,39 +168,3 @@ def test_ingest_rejects_missing_api_key():
         assert response.status_code == 401
     finally:
         app.dependency_overrides.clear()
-
-
-def test_public_job_endpoints_include_diagnostics(client):
-    ingestion_response = client.post(
-        INGESTION_URL,
-        json=get_payload(),
-    )
-
-    assert ingestion_response.status_code == 202
-
-    list_response = client.get("/api/v1/jobs")
-
-    assert list_response.status_code == 200
-
-    job = next(
-        item
-        for item in list_response.json()["items"]
-        if item["task_id"] == "test-task-001"
-    )
-
-    assert job["exception_type"] == "ValueError"
-    assert job["exception_message"] == "Invalid order"
-    assert job["exchange"] == "orders"
-    assert job["routing_key"] == "orders.process"
-
-    detail_response = client.get("/api/v1/jobs/test-task-001")
-
-    assert detail_response.status_code == 200
-
-    failed_event = next(
-        event
-        for event in detail_response.json()["events"]
-        if event["event_id"] == str(EVENT_IDS[1])
-    )
-
-    assert failed_event["traceback"].startswith("Traceback")

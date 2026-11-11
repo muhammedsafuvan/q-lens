@@ -1,6 +1,7 @@
 import uuid
 from datetime import UTC, datetime
 from typing import Annotated, Any
+from uuid import UUID
 
 import jwt
 from fastapi import Depends, HTTPException, status
@@ -10,7 +11,7 @@ from sqlalchemy.orm import Session
 
 from app.auth.token_service import decode_access_token
 from app.db.session import get_db
-from app.models import RefreshToken, User
+from app.models import RefreshToken, User, WorkspaceMember
 
 bearer_scheme = HTTPBearer(auto_error=False)
 
@@ -71,3 +72,40 @@ def get_current_user(
         )
 
     return user
+
+
+def get_current_user_workspace_id(
+    credentials: Annotated[
+        HTTPAuthorizationCredentials,
+        Depends(bearer_scheme),
+    ],
+    current_user: Annotated[
+        User,
+        Depends(get_current_user),
+    ],
+    db: Annotated[Session, Depends(get_db)],
+) -> UUID:
+    payload = decode_access_token(credentials.credentials)
+
+    try:
+        workspace_id = UUID(payload["workspace_id"])
+    except (KeyError, ValueError, TypeError):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid workspace in access token",
+        )
+
+    membership = db.scalar(
+        select(WorkspaceMember.id).where(
+            WorkspaceMember.user_id == current_user.id,
+            WorkspaceMember.workspace_id == workspace_id,
+        )
+    )
+
+    if membership is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User is not a member of this workspace",
+        )
+
+    return workspace_id

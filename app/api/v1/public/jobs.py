@@ -4,7 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from app.core.security import get_current_workspace
+from app.auth.dependencies import get_current_user_workspace_id
 from app.db.session import get_db
 from app.repositories.job_events import (
     count_workspace_jobs,
@@ -23,7 +23,7 @@ router = APIRouter(prefix="/jobs", tags=["Public Jobs"])
 
 @router.get("", response_model=JobListResponse)
 def list_jobs(
-    workspace_id: Annotated[UUID, Depends(get_current_workspace)],
+    workspace_id: Annotated[UUID, Depends(get_current_user_workspace_id)],
     db: Annotated[Session, Depends(get_db)],
     limit: Annotated[int, Query(ge=1, le=100)] = 10,
 ):
@@ -53,7 +53,7 @@ def list_jobs(
 @router.get("/{task_id}", response_model=JobDetail)
 def get_job(
     task_id: str,
-    workspace_id: Annotated[UUID, Depends(get_current_workspace)],
+    workspace_id: Annotated[UUID, Depends(get_current_user_workspace_id)],
     db: Annotated[Session, Depends(get_db)],
 ):
     events = get_workspace_job_events(db, workspace_id, task_id)
