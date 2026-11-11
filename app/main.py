@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.api.health import router as health_router
@@ -26,6 +27,24 @@ def create_app() -> FastAPI:
             same_site="lax",
             https_only=settings.app_env == "production",
         )
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[
+            settings.frontend_url.rstrip("/"),
+        ],
+        allow_credentials=True,
+        allow_methods=[
+            "GET",
+            "POST",
+            "PATCH",
+            "OPTIONS",
+        ],
+        allow_headers=[
+            "Authorization",
+            "Content-Type",
+        ],
+    )
 
     app.include_router(health_router)
     app.include_router(public_router, prefix="/api/v1")
